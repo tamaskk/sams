@@ -18,13 +18,14 @@ export function Breadcrumb({ tab, onTabClick, onCloseRepo, onClosePull }: Props)
   const selectedRepo = useStore((s) => s.selectedRepo);
   const selectedPull = useStore((s) => s.selectedPull);
   const navCard = useStore((s) => s.navCard);
+  const openFile = useStore((s) => s.openFile);
 
   const crumbs: Crumb[] = [];
   let context = "";
 
   if (selectedPull) {
     crumbs.push({ label: "GitHub", onClick: () => { onClosePull(); onCloseRepo(); } });
-    crumbs.push({ label: `PR #${selectedPull.number}`, onClick: undefined });
+    crumbs.push({ label: `PR #${selectedPull.number} — ${selectedPull.title}` });
   } else if (selectedRepo) {
     crumbs.push({ label: "GitHub", onClick: onCloseRepo });
     crumbs.push({ label: selectedRepo.full_name });
@@ -33,15 +34,11 @@ export function Breadcrumb({ tab, onTabClick, onCloseRepo, onClosePull }: Props)
     crumbs.push({ label: navCard.title });
     const idx = COLUMNS.indexOf(navCard.status);
     if (idx >= 0) context = `Step ${idx + 1} of ${COLUMNS.length}`;
+  } else if (tab === "Code" && openFile) {
+    crumbs.push({ label: "Code", onClick: () => onTabClick("Code") });
+    crumbs.push({ label: openFile.path.split("/").pop() ?? openFile.path });
   } else {
     crumbs.push({ label: tab });
-    if (tab === "Code") {
-      const openFile = useStore.getState().openFile;
-      if (openFile) {
-        crumbs[0].onClick = () => onTabClick(tab);
-        crumbs.push({ label: openFile.path.split("/").pop() ?? openFile.path });
-      }
-    }
   }
 
   return (
