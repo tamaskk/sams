@@ -67,6 +67,12 @@ export function Shell() {
         />
         {railView === "scm" ? <SourceControl /> : railView === "github" ? <GitHubPanel /> : <Explorer />}
         <div className="shell-center">
+          <Breadcrumb
+            tab={tab}
+            onTabClick={(t) => { closeGit(); setTab(t as Tab); }}
+            onCloseRepo={closeGit}
+            onClosePull={closePull}
+          />
           <div
             className="canvas-wrap"
             onDragOver={(e) => {
