@@ -17,6 +17,7 @@ import { CodeView } from "./CodeView";
 import { RepoView } from "./RepoView";
 import { PullView } from "./PullView";
 import { IdeasView } from "./IdeasView";
+import { Breadcrumb } from "./Breadcrumb";
 import { useStore } from "../store";
 import { SKILL_MIME } from "./SkillPalette";
 import { api } from "../lib/api";

@@ -34,12 +34,25 @@ export function KanbanView() {
   const tasks = useStore((s) => s.tasks);
   const setTasks = useStore((s) => s.setTasks);
   const events = useStore((s) => s.events);
+  const navCard = useStore((s) => s.navCard);
+  const setNavCard = useStore((s) => s.setNavCard);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Card | null>(null);
   const [dragCol, setDragCol] = useState<string | null>(null);
 
   const refresh = () => api.tasks().then(setTasks).catch(() => {});
   useEffect(() => { refresh(); }, [events.filter((e) => e.type.startsWith("kanban.")).length]);
+
+  // Sync editing card into store so the breadcrumb can display context.
+  useEffect(() => {
+    setNavCard(editing ? { id: editing.id, title: editing.title, status: editing.status } : null);
+    return () => setNavCard(null);
+  }, [editing]);
+
+  // Allow breadcrumb "Kanban" click to close the modal.
+  useEffect(() => {
+    if (!navCard && editing) setEditing(null);
+  }, [navCard]);
 
   // Move a card to a column with an optimistic update so the drag feels instant.
   const moveTo = (id: string, to: string) => {
