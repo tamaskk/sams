@@ -4,6 +4,40 @@ import { FolderPicker } from "./FolderPicker";
 
 interface RepoLite { full_name: string; name: string; private: boolean; language: string | null }
 
+function validateField(field: string, value: string | number): string {
+  switch (field) {
+    case "name":
+      return String(value).trim() ? "" : "Task name is required.";
+    case "desc": {
+      const len = String(value).length;
+      return len > 500 ? `${len - 500} characters over the 500-character limit.` : "";
+    }
+    case "maxAttempts": {
+      const n = Number(value);
+      if (!Number.isInteger(n) || isNaN(n)) return "Must be a whole number between 1 and 10.";
+      if (n < 1) return "Must be at least 1.";
+      if (n > 10) return "Must be 10 or fewer.";
+      return "";
+    }
+    case "initialDelay": {
+      const n = Number(value);
+      if (isNaN(n)) return "Must be a number.";
+      if (n < 0.1) return "Must be at least 0.1 seconds.";
+      if (n > 30) return "Must be 30 seconds or less.";
+      return "";
+    }
+    case "backoffMultiplier": {
+      const n = Number(value);
+      if (isNaN(n)) return "Must be a number.";
+      if (n < 1) return "Must be at least 1×.";
+      if (n > 5) return "Must be 5× or less.";
+      return "";
+    }
+    default:
+      return "";
+  }
+}
+
 // Create a task: name, description, and where it's done — a local project folder
 // OR a GitHub repo (the agents clone it, work, and open a PR). Starts in "To Do".
 export function NewTaskModal({ onClose, onCreated, initial }: { onClose: () => void; onCreated: () => void; initial?: { title?: string; description?: string } }) {
@@ -17,6 +51,31 @@ export function NewTaskModal({ onClose, onCreated, initial }: { onClose: () => v
   const [repoErr, setRepoErr] = useState("");
   const [repoQ, setRepoQ] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [maxAttempts, setMaxAttempts] = useState(3);
+  const [initialDelay, setInitialDelay] = useState(1.0);
+  const [backoffMultiplier, setBackoffMultiplier] = useState(2.0);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const touch = (field: string) => setTouched((t) => ({ ...t, [field]: true }));
+
+  const errors = {
+    name: validateField("name", name),
+    desc: validateField("desc", desc),
+    maxAttempts: validateField("maxAttempts", maxAttempts),
+    initialDelay: validateField("initialDelay", initialDelay),
+    backoffMultiplier: validateField("backoffMultiplier", backoffMultiplier),
+  };
+
+  const fieldClass = (field: keyof typeof errors) =>
+    `field${touched[field] ? (errors[field] ? " error" : " valid") : ""}`;
+
+  const fieldFeedback = (field: keyof typeof errors) => {
+    if (!touched[field]) return null;
+    if (errors[field]) return <div className="field-error">{errors[field]}</div>;
+    if (field === "desc" && !desc.trim()) return null;
+    return <div className="field-check">✓</div>;
+  };
 
   const loadRepos = async () => {
     if (repos) return;
@@ -50,10 +109,14 @@ export function NewTaskModal({ onClose, onCreated, initial }: { onClose: () => v
   const create = async () => {
     if (!name.trim() || busy) return;
     setBusy(true);
+    const retry_options = maxAttempts > 1
+      ? { max_attempts: maxAttempts, initial_delay: initialDelay, backoff_multiplier: backoffMultiplier }
+      : undefined;
     try {
       await api.createTask({
         title: name.trim(), description: desc.trim(), project, column: "To Do",
         image_data: imageData || undefined, image_name: imageName || undefined,
+        retry_options,
       });
       onCreated();
       onClose();
@@ -70,13 +133,18 @@ export function NewTaskModal({ onClose, onCreated, initial }: { onClose: () => v
         <div className="modal-header">New task</div>
         <div className="modal-body">
           <label className="field-label">Name</label>
-          <input className="field" autoFocus placeholder="What needs to be done?" value={name}
+          <input className={fieldClass("name")} autoFocus placeholder="What needs to be done?" value={name}
             onChange={(e) => setName(e.target.value)}
+            onBlur={() => touch("name")}
             onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) create(); }} />
+          {fieldFeedback("name")}
 
           <label className="field-label">Description</label>
-          <textarea className="field" rows={3} placeholder="Details, acceptance criteria, links…"
-            value={desc} onChange={(e) => setDesc(e.target.value)} />
+          <textarea className={fieldClass("desc")} rows={3} placeholder="Details, acceptance criteria, links…"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            onBlur={() => touch("desc")} />
+          {fieldFeedback("desc")}
 
           <label className="field-label">Reference image (optional)</label>
           {imageData ? (
@@ -104,7 +172,17 @@ export function NewTaskModal({ onClose, onCreated, initial }: { onClose: () => v
             <div className="repo-pick">
               <input className="gh-search" placeholder="Filter repositories…" value={repoQ} onChange={(e) => setRepoQ(e.target.value)} />
               <div className="repo-pick-list">
-                {!repos && !repoErr && <div className="repo-msg">Loading repositories…</div>}
+                {!repos && !repoErr && (
+                  <div style={{ padding: "8px 10px", display: "flex", flexDirection: "column", gap: 9 }}>
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span className="skel" style={{ flex: 1, height: 14 }} />
+                        <span className="skel" style={{ width: 36, height: 14 }} />
+                        <span className="skel" style={{ width: 48, height: 14, borderRadius: 999 }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {repoErr && <div className="repo-msg" style={{ color: "var(--text-muted)" }}>{repoErr}</div>}
                 {repos && filteredRepos.map((r) => (
                   <button key={r.full_name}
@@ -123,6 +201,42 @@ export function NewTaskModal({ onClose, onCreated, initial }: { onClose: () => v
             {ghName
               ? <>Selected repo: <span className="mono">{ghName}</span> — agents clone it, work, and open a PR.</>
               : <>Selected: <span className="mono">{project || "…"}</span></>}
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <button
+              style={{ fontSize: 11, color: "var(--text-muted)", background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
+              onClick={() => setShowAdvanced((v) => !v)}
+              type="button"
+            >
+              <span style={{ display: "inline-block", transition: "transform .15s", transform: showAdvanced ? "rotate(90deg)" : "none" }}>›</span>
+              Advanced options
+            </button>
+            {showAdvanced && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 8 }}>
+                <div>
+                  <label className="field-label">Max retries</label>
+                  <input className={fieldClass("maxAttempts")} type="number" min={1} max={10} step={1} value={maxAttempts}
+                    onChange={(e) => setMaxAttempts(Number(e.target.value))}
+                    onBlur={() => { touch("maxAttempts"); setMaxAttempts(Math.max(1, Math.min(10, maxAttempts))); }} />
+                  {fieldFeedback("maxAttempts")}
+                </div>
+                <div>
+                  <label className="field-label">Initial delay (s)</label>
+                  <input className={fieldClass("initialDelay")} type="number" min={0.1} max={30} step={0.1} value={initialDelay}
+                    onChange={(e) => setInitialDelay(Number(e.target.value))}
+                    onBlur={() => { touch("initialDelay"); setInitialDelay(Math.max(0.1, initialDelay)); }} />
+                  {fieldFeedback("initialDelay")}
+                </div>
+                <div>
+                  <label className="field-label">Backoff multiplier</label>
+                  <input className={fieldClass("backoffMultiplier")} type="number" min={1} max={5} step={0.1} value={backoffMultiplier}
+                    onChange={(e) => setBackoffMultiplier(Number(e.target.value))}
+                    onBlur={() => { touch("backoffMultiplier"); setBackoffMultiplier(Math.max(1, backoffMultiplier)); }} />
+                  {fieldFeedback("backoffMultiplier")}
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="modal-footer">

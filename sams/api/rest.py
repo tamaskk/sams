@@ -5,10 +5,13 @@ from __future__ import annotations
 import asyncio
 import json as _json
 import os
+import re as _re
 import signal
 import subprocess
 from pathlib import Path
 from typing import Any
+
+import httpx
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
@@ -254,6 +257,7 @@ class CardBody(BaseModel):
     project: str | None = None
     image_data: str | None = None  # data URL (data:image/png;base64,…)
     image_name: str | None = None
+    retry_options: dict[str, Any] | None = None  # {max_attempts, initial_delay, backoff_multiplier}
 
 
 def _image_ext(name: str | None, header: str) -> str:
@@ -306,6 +310,9 @@ async def create_task(request: Request, body: CardBody) -> dict[str, Any]:
             p.kanban.persist()
         except Exception:  # noqa: BLE001
             pass
+    if body.retry_options:
+        card.retry_options = body.retry_options
+        p.kanban.persist()
     return card.to_dict()
 
 
@@ -869,6 +876,69 @@ async def github_work(request: Request, body: GitHubWorkBody) -> dict[str, Any]:
     # Runs in the background; progress streams via agent.log events (Agent Logs).
     asyncio.create_task(worker.work(body.repo, body.task, body.base))
     return {"started": True, "repo": body.repo}
+
+
+# --------------------------------------------------------------------------- #
+# AI Ideas Generator
+# --------------------------------------------------------------------------- #
+_ANTHROPIC_MESSAGES = "https://api.anthropic.com/v1/messages"
+_ANTHROPIC_VERSION = "2023-06-01"
+
+
+class IdeasGenerateBody(BaseModel):
+    project: str = ""
+    categories: list[str] = []
+    model: str = "claude-sonnet-4-6"
+    temperature: float = 0.7
+    count: int = 5
+
+
+@router.post("/ideas/generate")
+async def generate_ideas(request: Request, body: IdeasGenerateBody) -> dict[str, Any]:
+    # Uses the LOCAL `claude` CLI (no API key) — same engine as the pipeline.
+    coder = _platform(request).pipeline.coder
+    if not getattr(coder, "installed", False):
+        raise HTTPException(
+            400,
+            "The local `claude` CLI was not found. Install Claude Code (and run `claude login`).",
+        )
+
+    project_name = body.project.rstrip("/").split("/")[-1] if body.project else ""
+    project_ctx = f'"{project_name}"' if project_name else "a software project"
+    cats = ", ".join(body.categories) if body.categories else "general improvements"
+
+    prompt = (
+        "You are a creative product and engineering strategist generating concrete, actionable "
+        "improvement ideas for software projects.\n\n"
+        f"Generate exactly {body.count} improvement ideas for {project_ctx}.\n"
+        f"Focus on these categories: {cats}.\n\n"
+        'Return ONLY valid JSON — no markdown fences, no prose. Shape: '
+        '{"ideas": [{"title": "...", "description": "...", "category": "...", "impact": "High|Medium|Low"}]}\n'
+        "Rules:\n"
+        "- title: 5-8 words, specific and punchy\n"
+        "- description: 2-3 sentences, concrete and actionable, not generic\n"
+        "- category: must be one of the requested categories (use the exact label)\n"
+        "- impact: exactly one of High, Medium, or Low"
+    )
+
+    try:
+        text = await coder.ask(prompt, model=body.model)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(502, f"claude error: {exc}")
+
+    try:
+        result = _json.loads(text)
+    except _json.JSONDecodeError:
+        m = _re.search(r"\{.*\}", text, _re.DOTALL)
+        if not m:
+            raise HTTPException(502, "AI returned a non-JSON response")
+        try:
+            result = _json.loads(m.group())
+        except _json.JSONDecodeError:
+            raise HTTPException(502, "Failed to parse the AI response as JSON")
+
+    ideas = result.get("ideas", [])
+    return {"ideas": ideas, "model": body.model, "project": body.project}
 
 
 # --------------------------------------------------------------------------- #

@@ -46,6 +46,7 @@ class Card:
     outputs: dict[str, str] = field(default_factory=dict)  # column/stage -> agent output summary
     gate_id: str | None = None  # the human-validation gate when in Deployer
     image: str | None = None  # absolute path to an attached reference image (given to the agent)
+    retry_options: dict | None = None  # {max_attempts, initial_delay, backoff_multiplier}
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -66,6 +67,7 @@ class Card:
             "outputs": dict(self.outputs),
             "gate_id": self.gate_id,
             "image": self.image,
+            "retry_options": self.retry_options,
         }
 
 
@@ -113,6 +115,7 @@ class KanbanBoard:
                 description=cd.get("description", ""), project=cd.get("project"),
                 stage_status=stage, outputs=dict(cd.get("outputs", {})), gate_id=None,
                 image=cd.get("image"),
+                retry_options=cd.get("retry_options"),
             )
             self._cards[card.id] = card
         bump_card_counter(self._cards.keys())

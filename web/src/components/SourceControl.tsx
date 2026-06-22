@@ -59,7 +59,12 @@ sams up</pre>
         )}
         {loading && <div style={{ padding: 10, color: "var(--text-subtle)", fontSize: 12 }}>Loading my tasks…</div>}
         {configured && tasks && tasks.length === 0 && !loading && (
-          <div style={{ padding: 10, color: "var(--text-subtle)", fontSize: 12 }}>No open tasks assigned to you.</div>
+          <div style={{ padding: "20px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
+            <div style={{ fontSize: 22, opacity: 0.35 }}>✓</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)" }}>All clear</div>
+            <div style={{ fontSize: 11, color: "var(--text-subtle)", lineHeight: 1.5 }}>No open tasks assigned to you in ClickUp.</div>
+            <button className="mini-btn" style={{ marginTop: 4, fontSize: 11 }} onClick={load}>Check again</button>
+          </div>
         )}
         {configured && (tasks ?? []).map((t) => (
           <div key={t.id} className="cu-task">

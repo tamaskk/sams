@@ -12,6 +12,11 @@ const COLUMN_COLOR: Record<string, string> = {
   "To Do": "#94A3B8", Planner: "#0EA5E9", Designer: "#F43F5E", Developer: "#3B82F6",
   Reviewer: "#EF4444", Tester: "#2DD4BF", Deployer: "#64748B", Committed: "#16A34A",
 };
+const COLUMN_HINT: Record<string, string> = {
+  "To Do": "New tasks land here", Planner: "Awaiting planning", Designer: "Awaiting design",
+  Developer: "Ready to build", Reviewer: "Awaiting review", Tester: "Awaiting QA",
+  Deployer: "Ready to ship", Committed: "Shipped tasks",
+};
 const CARD_MIME = "application/sams-card";
 const STAGE_BADGE: Record<string, { label: string; cls: string }> = {
   working: { label: "● working…", cls: "st-working" },
@@ -54,6 +59,18 @@ export function KanbanView() {
     await api.commitTask(id).catch(() => {});
     refresh();
   };
+
+  if (tasks.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-state-icon">▦</div>
+        <div className="empty-state-title">No tasks yet</div>
+        <div className="empty-state-sub">Create your first task to start the pipeline — agents will pick it up automatically.</div>
+        <button className="btn-primary" onClick={() => setCreating(true)}>+ New task</button>
+        {creating && <NewTaskModal onClose={() => setCreating(false)} onCreated={refresh} />}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -131,7 +148,9 @@ export function KanbanView() {
                   </div>
                 </div>
               ))}
-              {cards.length === 0 && <div className="kanban-empty">{isTarget ? "Drop here" : ""}</div>}
+              {cards.length === 0 && (
+                <div className="kanban-empty">{isTarget ? "Drop here" : COLUMN_HINT[col]}</div>
+              )}
             </div>
           );
         })}

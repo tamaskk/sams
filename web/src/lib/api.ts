@@ -25,7 +25,7 @@ export const api = {
     req<any>("POST", `/agents/${id}/assign`, { title, capability }),
   scene: (space: string) => req<any>("GET", `/spaces/${space}/scene`),
   tasks: () => req<any[]>("GET", "/tasks"),
-  createTask: (body: { title: string; labels?: string[]; description?: string; project?: string | null; column?: string; image_data?: string; image_name?: string }) =>
+  createTask: (body: { title: string; labels?: string[]; description?: string; project?: string | null; column?: string; image_data?: string; image_name?: string; retry_options?: { max_attempts: number; initial_delay: number; backoff_multiplier: number } }) =>
     req<any>("POST", "/tasks", body),
   moveTask: (id: string, to: string) => req<any>("PATCH", `/tasks/${id}`, { to }),
   updateTask: (id: string, body: Record<string, any>) => req<any>("PATCH", `/tasks/${id}`, body),
@@ -84,6 +84,17 @@ export const api = {
   vercelStatus: () => req<{ configured: boolean }>("GET", "/integrations/vercel/status"),
   vercelDeploy: (target: string, prod = true, subdir?: string) =>
     req<{ started: boolean; target: string; prod: boolean }>("POST", "/integrations/vercel/deploy", { target, prod, subdir }),
+  generateIdeas: (body: {
+    project: string;
+    categories: string[];
+    model: string;
+    temperature: number;
+    count: number;
+  }) => req<{
+    ideas: { title: string; description: string; category: string; impact: string }[];
+    model: string;
+    project: string;
+  }>("POST", "/ideas/generate", body),
   startProject: (path: string) =>
     req<{ started: boolean; command?: string; pid?: number; reason?: string }>("POST", "/projects/start", { path }),
   runningProjects: () => req<any[]>("GET", "/projects/running"),

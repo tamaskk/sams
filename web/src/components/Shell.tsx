@@ -16,11 +16,12 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { CodeView } from "./CodeView";
 import { RepoView } from "./RepoView";
 import { PullView } from "./PullView";
+import { IdeasView } from "./IdeasView";
 import { useStore } from "../store";
 import { SKILL_MIME } from "./SkillPalette";
 import { api } from "../lib/api";
 
-type Tab = "Spatial" | "Kanban" | "Whiteboard" | "Code";
+type Tab = "Spatial" | "Kanban" | "Whiteboard" | "Code" | "Ideas";
 
 export function Shell() {
   const [tab, setTab] = useState<Tab>("Spatial");
@@ -56,8 +57,14 @@ export function Shell() {
     <div className="shell">
       <TopBar onSearch={() => setPaletteOpen(true)} />
       <div className="shell-body">
-        <IconRail active={railView} onSelect={setRailView} />
-        {railView === "scm" ? <SourceControl /> : railView === "github" ? <GitHubPanel /> : railView === "lightball" ? <LightPanel /> : <Explorer />}
+        <IconRail
+          active={tab === "Ideas" ? "ideas" : railView}
+          onSelect={(id) => {
+            if (id === "ideas") { closeGit(); setTab("Ideas"); }
+            else setRailView(id);
+          }}
+        />
+        {railView === "scm" ? <SourceControl /> : railView === "github" ? <GitHubPanel /> : <Explorer />}
         <div className="shell-center">
           <div
             className="canvas-wrap"
@@ -83,7 +90,7 @@ export function Shell() {
               <div className="drop-hint">Drop to add this agent to the room</div>
             )}
             <div className="canvas-tabs">
-              {(["Spatial", "Kanban", "Whiteboard", "Code"] as Tab[]).map((t) => (
+              {(["Spatial", "Kanban", "Whiteboard", "Code", "Ideas"] as Tab[]).map((t) => (
                 <button key={t} className={`canvas-tab ${!selectedRepo && !selectedPull && tab === t ? "active" : ""}`} onClick={() => { closeGit(); setTab(t); }}>{t}</button>
               ))}
               {selectedPull ? (
@@ -100,8 +107,16 @@ export function Shell() {
               <>
                 {tab === "Spatial" && <><SpatialToolbar /><ErrorBoundary><Scene /></ErrorBoundary></>}
                 {tab === "Kanban" && <KanbanView />}
-                {tab === "Whiteboard" && <Placeholder label="Whiteboard — Design / Document / Hybrid" />}
+                {tab === "Whiteboard" && (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">✏</div>
+                    <div className="empty-state-title">Whiteboard — coming soon</div>
+                    <div className="empty-state-sub">A free-form canvas for designing, diagramming, and documenting alongside your agents.</div>
+                    <button className="btn-primary" onClick={() => setTab("Kanban")}>Go to Kanban →</button>
+                  </div>
+                )}
                 {tab === "Code" && <CodeView />}
+                {tab === "Ideas" && <IdeasView />}
               </>
             )}
           </div>
@@ -120,12 +135,4 @@ export function Shell() {
 
 function Placeholder({ label }: { label: string }) {
   return <div style={{ display: "grid", placeItems: "center", height: "100%", color: "var(--text-subtle)" }}>{label}</div>;
-}
-
-function LightPanel() {
-  return (
-    <div className="panel left" style={{ display: "grid", placeItems: "center", color: "var(--text-subtle)", fontSize: 12 }}>
-      Light
-    </div>
-  );
 }

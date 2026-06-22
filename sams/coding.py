@@ -18,10 +18,23 @@ import logging
 import os
 import shutil
 import signal
+import tempfile
 from pathlib import Path
 from typing import Any
 
+from .core.retry import RetryOptions, async_retry
+
 log = logging.getLogger("sams.coding")
+
+
+def _model_alias(model: str | None) -> str:
+    """Map a model name/id to a `claude` CLI alias the CLI reliably accepts."""
+    m = (model or "").lower()
+    if "opus" in m:
+        return "opus"
+    if "haiku" in m:
+        return "haiku"
+    return "sonnet"
 
 
 def _kill_group(proc: asyncio.subprocess.Process) -> None:
@@ -73,6 +86,42 @@ class ClaudeCodeRunner:
     @property
     def available(self) -> bool:
         return self.bin is not None and os.environ.get("SAMS_AUTOEDIT", "1") == "1"
+
+    @property
+    def installed(self) -> bool:
+        return self.bin is not None
+
+    async def ask(self, prompt: str, *, model: str | None = None, timeout: float = 120.0,
+                  retry: RetryOptions | None = None) -> str:
+        """One-shot Q&A via the local `claude` CLI (no file editing). Returns the text.
+
+        Automatically retried on transient failures. Pass retry=RetryOptions(max_attempts=1)
+        to disable retries, or customise max_attempts/initial_delay/backoff_multiplier.
+        """
+        if self.bin is None:
+            raise RuntimeError("the `claude` CLI was not found on PATH")
+        opts = retry if retry is not None else RetryOptions()
+        cmd = [self.bin, "-p", prompt, "--output-format", "text", "--model", _model_alias(model or self.model)]
+
+        async def _attempt() -> str:
+            cwd = tempfile.mkdtemp(prefix="sams-ask-")
+            try:
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd, cwd=cwd, start_new_session=True,
+                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                )
+                try:
+                    out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+                except asyncio.TimeoutError:
+                    _kill_group(proc)
+                    raise RuntimeError("claude timed out")
+                if proc.returncode != 0:
+                    raise RuntimeError((err or b"").decode(errors="replace").strip()[-300:] or "claude exited with an error")
+                return (out or b"").decode(errors="replace").strip()
+            finally:
+                shutil.rmtree(cwd, ignore_errors=True)
+
+        return await async_retry(_attempt, opts)
 
     async def run(self, project_dir: str, prompt: str, on_event=None) -> dict[str, Any]:
         """Run the local Claude Code headlessly in ``project_dir`` with ``prompt``.

@@ -124,6 +124,7 @@ interface SamsState {
   decor: DecorItem[];
   editLayout: boolean;
   roomSize: RoomSize;
+  navCard: { id: string; title: string; status: string } | null;
 
   setConnected: (v: boolean) => void;
   applySnapshot: (data: any) => void;
@@ -147,6 +148,7 @@ interface SamsState {
   setRoomSize: (width: number, depth: number) => void;
   resetRoomSize: () => void;
   setAgentColor: (id: string, color: string) => void;
+  setNavCard: (card: { id: string; title: string; status: string } | null) => void;
 }
 
 export const useStore = create<SamsState>((set, get) => ({
@@ -170,6 +172,7 @@ export const useStore = create<SamsState>((set, get) => ({
   decor: _office.decor,
   editLayout: false,
   roomSize: _office.room,
+  navCard: null,
 
   setConnected: (v) => set({ connected: v }),
   setOpenFile: (f) => set({ openFile: f }),
@@ -308,6 +311,7 @@ export const useStore = create<SamsState>((set, get) => ({
     saveOffice(fit.stations, fit.decor, null);
     return { roomSize: null, ...fit };
   }),
+  setNavCard: (card) => set({ navCard: card }),
   setAgentColor: (id, color) => set((s) => {
     const agent = s.agents[id];
     if (!agent) return s;

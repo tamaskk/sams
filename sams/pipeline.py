@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from .coding import ClaudeCodeRunner
+from .core.retry import RetryOptions, async_retry
 from .integrations.github_api import GitHubClient
 from .integrations.github_work import _run as _git_run, _slug, clone_url
 from .orchestrator.models import Task
@@ -238,11 +239,30 @@ class PipelineController:
                     actor=_role, space=self.space,
                 )
 
+            retry_cfg = (
+                RetryOptions.from_dict(card.retry_options) if card.retry_options
+                else RetryOptions(max_attempts=1)
+            )
+            _attempt_num = [0]
+
+            async def _coder_attempt() -> dict:
+                _attempt_num[0] += 1
+                if _attempt_num[0] > 1:
+                    await on_event(f"🔄 Retry {_attempt_num[0]}/{retry_cfg.max_attempts}…")
+                r = await self.coder.run(
+                    project_dir, self._stage_prompt(column, card), on_event=on_event
+                )
+                if not r.get("ok"):
+                    raise RuntimeError(r.get("reason") or r.get("summary") or "run failed")
+                return r
+
             try:
-                result = await self.coder.run(project_dir, self._stage_prompt(column, card), on_event=on_event)
+                result = await async_retry(_coder_attempt, retry_cfg)
             except asyncio.CancelledError:
                 await self._emit_agent_state(role, "idle", "")  # stage stopped — release the robot
                 raise
+            except RuntimeError as exc:
+                result = {"ok": False, "reason": str(exc), "changed": []}
             await self._emit_agent_state(role, "idle", "")
             output = self._format_result(column, result)
             changed = result.get("changed") or []
@@ -306,18 +326,58 @@ class PipelineController:
         if (card.project or "").startswith("github:"):
             await self._finalize_github(card_id, card)
         else:
-            task = Task(
-                title=f"Commit {card.title}",
-                capability="ops.deploy",
-                assignee="deployer",
-                card_id=card_id,
-                inputs={"project": card.project, "outputs": dict(card.outputs)},
-                space=self.space,
-            )
-            completed = await self.orchestrator.assign_and_run(task)
-            card.outputs[COMMITTED_COLUMN] = "committed — " + _summarize(completed.result)
+            await self._commit_local(card_id, card)
         card.stage_status = "committed"
         await self._emit_update(card_id, {"stage": COMMITTED_COLUMN, "status": "committed"})
+
+    async def _commit_local(self, card_id: str, card) -> None:
+        """A real git commit (+ push) of the agents' changes in a local project."""
+        proj = card.project
+
+        async def glog(msg: str, level: str = "INFO") -> None:
+            await self.event_bus.emit("agent.log", {"agent": "deployer", "level": level, "message": msg},
+                                      actor="deployer", space=self.space)
+
+        if not proj or not os.path.isdir(proj):
+            card.outputs[COMMITTED_COLUMN] = "⚠️ no project folder to commit."
+            await glog("No project folder to commit.", level="ERROR")
+            return
+        rc, _ = await _git_run(["git", "rev-parse", "--is-inside-work-tree"], proj)
+        if rc != 0:
+            await glog(f"📦 Initializing a git repo in {os.path.basename(proj.rstrip('/'))} …")
+            await _git_run(["git", "init"], proj)
+        rc, dirty = await _git_run(["git", "status", "--porcelain"], proj)
+        if not dirty.strip():
+            card.outputs[COMMITTED_COLUMN] = "No changes to commit."
+            await glog("No changes to commit.")
+            return
+        n = len([ln for ln in dirty.splitlines() if ln.strip()])
+        await glog(f"📝 Committing {n} changed file(s) …")
+        await _git_run(["git", "add", "-A"], proj)
+        await _git_run(["git", "-c", "user.email=sams-agent@users.noreply.github.com",
+                        "-c", "user.name=SAMS Agent", "commit", "-m", f"SAMS: {card.title[:72]}"], proj)
+        # Push if there's a remote (use the GitHub token for github https remotes).
+        rc, remote_url = await _git_run(["git", "remote", "get-url", "origin"], proj)
+        remote_url = remote_url.strip()
+        if not remote_url:
+            card.outputs[COMMITTED_COLUMN] = f"committed locally ({n} file(s)) — no remote to push to."
+            await glog(f"✅ Committed locally ({n} file(s)). No 'origin' remote — not pushed.", level="SUCCESS")
+            return
+        rc, branch = await _git_run(["git", "rev-parse", "--abbrev-ref", "HEAD"], proj)
+        branch = branch.strip() or "main"
+        token = self._github.token
+        await glog("⬆️ Pushing …")
+        if remote_url.startswith("https://github.com/") and token:
+            auth = remote_url.replace("https://github.com/", f"https://x-access-token:{token}@github.com/", 1)
+            rc, out = await _git_run(["git", "push", auth, branch], proj, redact=token)
+        else:
+            rc, out = await _git_run(["git", "push", "origin", branch], proj, redact=token)
+        if rc == 0:
+            card.outputs[COMMITTED_COLUMN] = f"committed & pushed ({n} file(s)) to {branch}."
+            await glog(f"✅ Committed & pushed {n} file(s) to {branch}.", level="SUCCESS")
+        else:
+            card.outputs[COMMITTED_COLUMN] = f"committed ({n} file(s)); push failed: {out.strip()[:160]}"
+            await glog(f"⚠️ Committed locally, but push failed: {out.strip()[:200]}", level="ERROR")
 
     async def _finalize_github(self, card_id: str, card) -> None:
         """Commit the per-card clone, push a branch and open a PR, then clean up."""
