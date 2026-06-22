@@ -1,0 +1,31 @@
+apiVersion: sams/v1
+kind: Workflow
+metadata:
+  id: code-review
+  name: Code Review
+spec:
+  trigger:
+    on: "git.pr.opened"
+  steps:
+    - id: assign-reviewer
+      capability: code.review
+      agent: hex                 # explicit, or omit to let the Orchestrator choose
+      inputs:
+        pr: "${trigger.pr}"
+    - id: security-scan
+      capability: security.audit
+      agent: aegis
+      parallel: true             # runs alongside the review
+    - id: gate
+      kind: approval             # human/agent approval at the Security Gate
+      requires: ["assign-reviewer", "security-scan"]
+      approvers: ["hex", "aegis", "human:lead"]
+      policy: all                # all | any | quorum(n)
+    - id: merge
+      capability: ops.deploy
+      agent: forge
+      requires: ["gate"]
+  outputs:
+    merged: "${steps.merge.result}"
+  onError:
+    notify: ["echo"]

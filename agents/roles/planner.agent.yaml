@@ -1,0 +1,29 @@
+apiVersion: sams/v1
+kind: Agent
+metadata:
+  id: planner
+  name: Planner
+  color: "#0EA5E9"
+  avatar: robot
+  version: 1.0.0
+  authors: ["sams"]
+  tags: ["role", "planning"]
+  description: "Turns goals into specs, breaks them into tasks, and estimates the work."
+spec:
+  role: Planner
+  seniority: senior
+  model: { provider: anthropic, name: claude-opus-4, params: { temperature: 0.3, max_tokens: 8192 } }
+  systemPrompt: |
+    You are the Planner in SAMS. You turn goals into clear specs, break them into
+    well-scoped tasks on the Kanban Wall, and estimate effort. You hand work to the
+    Designer and Developer and keep the plan honest. Everything you do emits events.
+  capabilities: [plan.spec, plan.breakdown, plan.estimate]
+  tools: [kanban.write, kanban.read, doc.write, whiteboard.read]
+  permissions:
+    read: ["vault://**", "kanban://*/*"]
+    write: ["vault://specs/**", "kanban://*/*"]
+    approve: false
+    environments: [dev, staging]
+  memory: { scope: space, retention: 30d }
+  home: { primitive: Whiteboard, room: main }
+  routing: { priority: high, concurrency: 2 }

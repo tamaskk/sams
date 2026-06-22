@@ -1,0 +1,70 @@
+# agents/custom/seo-agent.agent.yaml
+# The canonical custom-agent example from spec 6.2 — a code-backed agent that
+# adds a brand-new capability (content.seo_audit) via a handler. Demonstrates
+# that adding an agent requires zero core changes.
+apiVersion: sams/v1
+kind: Agent
+
+metadata:
+  id: seo-agent
+  name: Beacon-SEO
+  color: "#2BC6A4"
+  avatar: robot
+  version: 1.0.0
+  authors: ["tamas"]
+  tags: ["marketing", "seo", "content"]
+  description: "Audits pages and proposes SEO improvements."
+
+spec:
+  role: SEO Specialist
+  seniority: mid
+
+  model:
+    provider: anthropic
+    name: claude-sonnet-4
+    params:
+      temperature: 0.4
+      max_tokens: 4096
+
+  systemPrompt: |
+    You are an SEO specialist agent in SAMS. You audit web pages,
+    identify on-page and technical SEO issues, and propose concrete,
+    prioritized fixes. You never publish changes; you produce reports
+    and tasks for human approval.
+
+  capabilities:
+    - research.web
+    - content.edit
+    - data.visualize
+
+  tools:
+    - web.fetch
+    - web.search
+    - doc.write
+    - kanban.write
+
+  permissions:
+    read:
+      - "vault://content/**"
+      - "kanban://*/*"
+    write:
+      - "vault://content/seo-reports/**"
+    approve: false
+    environments: ["dev", "staging"]
+
+  memory:
+    scope: space
+    retention: 30d
+
+  home:
+    primitive: Whiteboard
+    room: marketing
+
+  routing:
+    priority: normal
+    concurrency: 2
+    triggers:
+      - on: "kanban.card.labeled"
+        when: "payload.label == 'seo'"
+
+  handler: agents/custom/seo_agent.py:SeoAgent

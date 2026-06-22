@@ -1,0 +1,46 @@
+/* SAMS design tokens — copied verbatim from the spec (§7.15) so the look is
+   reproducible. Extend `--agent-*` when adding agents and primitive materials
+   when adding primitives. */
+:root {
+  /* Surfaces */
+  --bg-app: #F6F8FB;  --bg-panel: #FFFFFF;  --bg-tint: #EEF6FF;
+  --border: #E2E8F0;  --border-strong: #CBD5E1;
+
+  /* Text */
+  --text: #0F172A;  --text-muted: #64748B;  --text-subtle: #94A3B8;
+
+  /* Brand / action */
+  --brand: #3B82F6;  --brand-hover: #2563EB;
+
+  /* Status (semantic) */
+  --success: #22C55E;  --warning: #F59E0B;  --error: #EF4444;
+  --idle: #94A3B8;     --info: #3B82F6;
+
+  /* Agent identity */
+  --agent-blue: #3B82F6;  --agent-green: #22C55E;  --agent-orange: #F97316;
+  --agent-purple: #8B5CF6; --agent-red: #EF4444;   --agent-yellow: #EAB308;
+
+  /* Soft accents (labels / sticky notes) */
+  --accent-yellow: #FEF3C7; --accent-green: #DCFCE7; --accent-pink: #FCE7F3;
+  --accent-blue: #DBEAFE;   --accent-purple: #EDE9FE;
+
+  /* Glass */
+  --glass-edge: #7CC3FF;  --glass-opacity: 0.65;
+
+  /* Radius / elevation / spacing */
+  --radius-sm: 8px;  --radius-md: 12px;  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
+  --shadow-md: 0 4px 12px rgba(15,23,42,.08);
+  --space-unit: 8px;
+
+  /* Type */
+  --font-ui: 'Inter','SF Pro Text',system-ui,-apple-system,sans-serif;
+  --font-mono: 'JetBrains Mono','SF Mono',ui-monospace,monospace;
+}
+
+/* Dark variant (from the lo-fi product videos) */
+[data-theme="dark"] {
+  --bg-app: #0B0F1A;  --bg-panel: #131926;  --bg-tint: #0F1626;
+  --border: #1E293B;  --border-strong: #334155;
+  --text: #E6EDF7;    --text-muted: #94A3B8; --text-subtle: #64748B;
+}

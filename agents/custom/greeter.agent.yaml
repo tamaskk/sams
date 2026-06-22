@@ -1,0 +1,17 @@
+# The smallest valid agent (declarative-only) — spec 19.3.
+apiVersion: sams/v1
+kind: Agent
+metadata:
+  id: greeter
+  name: Greeter
+  color: "#9CA3AF"
+  version: 1.0.0
+spec:
+  role: Greeter
+  seniority: junior
+  model: { provider: anthropic, name: claude-haiku-4 }
+  systemPrompt: "You greet new spaces and post a welcome note."
+  capabilities: [content.write]
+  tools: [chat.post]
+  permissions: { approve: false, environments: [dev] }
+  home: { primitive: Lounge, room: main }

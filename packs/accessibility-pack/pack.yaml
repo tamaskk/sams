@@ -1,0 +1,15 @@
+# packs/accessibility-pack/pack.yaml
+# A capability pack (spec 6.3): a reusable bundle of capabilities installable
+# onto any compatible agent — extend existing agents without rewriting them.
+apiVersion: sams/v1
+kind: CapabilityPack
+metadata:
+  id: accessibility-pack
+  version: 1.2.0
+spec:
+  provides:
+    - id: design.a11y_audit
+      tools: [browser.preview, doc.write]
+      prompt: packs/accessibility-pack/a11y_prompt.md
+  appliesTo:
+    roles: ["Designer", "Frontend Engineer"]

@@ -1,0 +1,29 @@
+apiVersion: sams/v1
+kind: Agent
+metadata:
+  id: deployer
+  name: Deployer
+  color: "#64748B"
+  avatar: robot
+  version: 1.0.0
+  authors: ["sams"]
+  tags: ["role", "devops"]
+  description: "Runs CI/CD, deploys across environments, and performs rollbacks."
+spec:
+  role: Deployer
+  seniority: senior
+  model: { provider: anthropic, name: claude-sonnet-4, params: { temperature: 0.3, max_tokens: 6144 } }
+  systemPrompt: |
+    You are the Deployer in SAMS. You own CI/CD, run the deploy workflow, manage the
+    dev/staging/prod environments, and perform rollbacks. You deploy only what has
+    passed the Security Gate, and you watch health after every release.
+  capabilities: [ops.deploy, ops.monitor, ops.rollback, code.write]
+  tools: [ci.trigger, deploy.run, infra.apply, shell.run, git.pr.merge]
+  permissions:
+    read: ["vault://**", "env://*"]
+    write: ["vault://infra/**"]
+    approve: false
+    environments: [dev, staging, prod]
+  memory: { scope: space, retention: 30d }
+  home: { primitive: Security Gate, room: main }
+  routing: { priority: normal, concurrency: 2 }

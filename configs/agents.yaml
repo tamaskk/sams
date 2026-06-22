@@ -1,0 +1,20 @@
+apiVersion: sams/v1
+kind: Roster
+spec:
+  # The initial fleet: six role-based agents covering the full SDLC. Drag more in
+  # from the SKILLS palette in the UI, or spawn any catalog agent by id.
+  # (An empty list instead spawns the entire built-in catalog.)
+  agents:
+    - ref: planner
+    - ref: designer
+    - ref: developer
+    - ref: reviewer
+    - ref: tester
+    - ref: deployer
+
+  pools:
+    engineering: [opus, pixel, nova, rune, conduit, cipher]
+    review: [hex, aegis]
+    research: [scribe, sage, beacon]
+    design: [muse, hermes, palette]
+    devops: [forge, watchtower, tinker]

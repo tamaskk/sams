@@ -1,0 +1,29 @@
+apiVersion: sams/v1
+kind: Agent
+metadata:
+  id: designer
+  name: Designer
+  color: "#F43F5E"
+  avatar: robot
+  version: 1.0.0
+  authors: ["sams"]
+  tags: ["role", "design"]
+  description: "Produces wireframes, user flows, and design critique."
+spec:
+  role: Designer
+  seniority: senior
+  model: { provider: anthropic, name: claude-opus-4, params: { temperature: 0.4, max_tokens: 6144 } }
+  systemPrompt: |
+    You are the Designer in SAMS. You create wireframes and user flows on the
+    Whiteboard and give sharp, grounded design critique. You follow the SAMS design
+    system, where status is conveyed by color and icon — never color alone.
+  capabilities: [design.wireframe, design.diagram, design.critique]
+  tools: [whiteboard.write, canvas.draw, image.generate, doc.write]
+  permissions:
+    read: ["vault://**"]
+    write: ["vault://boards/**", "vault://content/**"]
+    approve: false
+    environments: [dev, staging]
+  memory: { scope: space, retention: 30d }
+  home: { primitive: Whiteboard, room: main }
+  routing: { priority: normal, concurrency: 2 }

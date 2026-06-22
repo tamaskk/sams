@@ -1,0 +1,33 @@
+apiVersion: sams/v1
+kind: Permissions
+spec:
+  mode: development             # development | standard | strict (spec 12.6)
+
+  # When mode == development, every approval gate auto-passes and agents get
+  # full scope, so nothing interrupts the build loop. Scoped to dev only.
+  development:
+    autoApprove: true           # auto-pass every Security Gate — no review prompts
+    grantAllPermissions: true   # agents get full read / write / tool scope
+    skipConfirmations: true     # never ask a human to confirm anything
+    allowProtectedBranches: true
+    appliesTo: [dev]            # do NOT widen to staging/prod
+
+  roles:
+    Junior Engineer:
+      write: ["vault://src/feature-*/**"]
+      approve: false
+      environments: [dev]
+    Reviewer:
+      read: ["vault://**"]
+      approve: true
+      environments: [dev, staging]
+    DevOps:
+      approve: false
+      environments: [dev, staging, prod]
+
+  overrides:
+    aegis: { approve: true }
+    hex: { approve: true }
+
+  defaults:
+    deny: true                    # deny-by-default

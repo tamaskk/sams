@@ -1,0 +1,507 @@
+{
+  "space_id": "main.space",
+  "room": {
+    "width": 12.0,
+    "depth": 10.0,
+    "height": 3.0,
+    "grid": 0.5
+  },
+  "primitives": [
+    {
+      "id": "prim_d7e187f1",
+      "type": "Desk",
+      "name": "Desk 01",
+      "transform": {
+        "position": [
+          2.0,
+          0.0,
+          2.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_dd55028c",
+      "type": "Desk",
+      "name": "Desk 02",
+      "transform": {
+        "position": [
+          2.0,
+          0.0,
+          4.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_6cddc08f",
+      "type": "Desk",
+      "name": "Desk 03",
+      "transform": {
+        "position": [
+          2.0,
+          0.0,
+          6.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_f191ce8d",
+      "type": "Desk",
+      "name": "Desk 04",
+      "transform": {
+        "position": [
+          4.0,
+          0.0,
+          2.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_3baf25c6",
+      "type": "Desk",
+      "name": "Desk 05",
+      "transform": {
+        "position": [
+          4.0,
+          0.0,
+          4.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_09353d28",
+      "type": "Desk",
+      "name": "Desk 06",
+      "transform": {
+        "position": [
+          4.0,
+          0.0,
+          6.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_9100015e",
+      "type": "Whiteboard",
+      "name": "Whiteboard",
+      "transform": {
+        "position": [
+          7.5,
+          2.0,
+          1.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "glass",
+        "opacity": 0.65,
+        "edgeGlow": true,
+        "color": "#7CC3FF"
+      },
+      "tags": [
+        "whiteboard"
+      ],
+      "bindings": [
+        {
+          "channel": "whiteboard.data",
+          "to": "/work/boards"
+        }
+      ],
+      "interactions": [
+        "generate_diagram",
+        "expand_notes",
+        "convert_to_prd"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_492fcc08",
+      "type": "Kanban Wall",
+      "name": "Kanban Wall",
+      "transform": {
+        "position": [
+          10.0,
+          1.5,
+          3.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "glass",
+        "opacity": 0.7,
+        "edgeGlow": true,
+        "color": "#DBEAFE"
+      },
+      "tags": [
+        "kanban wall"
+      ],
+      "bindings": [],
+      "interactions": [
+        "new_card",
+        "move_card",
+        "filter",
+        "sync_github"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_06c25eea",
+      "type": "Vault",
+      "name": "Vault",
+      "transform": {
+        "position": [
+          10.5,
+          0.0,
+          7.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "metal",
+        "opacity": 1.0,
+        "edgeGlow": true,
+        "color": "#94A3B8"
+      },
+      "tags": [
+        "vault"
+      ],
+      "bindings": [],
+      "interactions": [
+        "view_status",
+        "browse_files",
+        "inspect_memory"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_2a679174",
+      "type": "Security Gate",
+      "name": "Security Gate",
+      "transform": {
+        "position": [
+          7.5,
+          0.0,
+          9.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "metal",
+        "opacity": 1.0,
+        "edgeGlow": true,
+        "color": "#22C55E"
+      },
+      "tags": [
+        "security gate"
+      ],
+      "bindings": [],
+      "interactions": [
+        "approve",
+        "request_changes",
+        "review_queue"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_69d59d10",
+      "type": "Lounge",
+      "name": "Lounge",
+      "transform": {
+        "position": [
+          1.5,
+          0.0,
+          8.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "fabric",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#EDE9FE"
+      },
+      "tags": [
+        "lounge"
+      ],
+      "bindings": [],
+      "interactions": [
+        "assign_idle_agents"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_8b7b2c01",
+      "type": "Event Stream",
+      "name": "Event Stream",
+      "transform": {
+        "position": [
+          10.0,
+          1.5,
+          9.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "glass",
+        "opacity": 0.6,
+        "edgeGlow": true,
+        "color": "#3B82F6"
+      },
+      "tags": [
+        "event stream"
+      ],
+      "bindings": [],
+      "interactions": [
+        "inspect_events",
+        "filter"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_4cc2f29d",
+      "type": "Terminal",
+      "name": "Terminal",
+      "transform": {
+        "position": [
+          6.0,
+          0.0,
+          5.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "glass",
+        "opacity": 0.85,
+        "edgeGlow": true,
+        "color": "#0F172A"
+      },
+      "tags": [
+        "terminal"
+      ],
+      "bindings": [],
+      "interactions": [
+        "run_command",
+        "view_logs"
+      ],
+      "active": false
+    }
+  ]
+}

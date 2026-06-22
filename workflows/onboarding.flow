@@ -1,0 +1,26 @@
+apiVersion: sams/v1
+kind: Workflow
+metadata:
+  id: onboarding
+  name: Project Onboarding
+spec:
+  trigger:
+    on: "system.space.created"
+  steps:
+    - id: scaffold-boards
+      capability: plan.spec
+      agent: concierge
+      inputs:
+        space: "${trigger.space}"
+    - id: draft-prd
+      capability: plan.spec
+      agent: compass
+      requires: ["scaffold-boards"]
+    - id: breakdown
+      capability: plan.breakdown
+      agent: atlas
+      requires: ["draft-prd"]
+  outputs:
+    plan: "${steps.breakdown.result}"
+  onError:
+    notify: ["echo"]

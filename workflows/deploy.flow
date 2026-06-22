@@ -1,0 +1,31 @@
+apiVersion: sams/v1
+kind: Workflow
+metadata:
+  id: deploy
+  name: Deploy
+spec:
+  trigger:
+    on: "git.pr.merged"
+  steps:
+    - id: build
+      capability: ops.deploy
+      agent: forge
+      inputs:
+        ref: "${trigger.pr}"
+    - id: gate
+      kind: approval
+      requires: ["build"]
+      approvers: ["human:lead"]
+      policy: any
+    - id: deploy
+      capability: ops.deploy
+      agent: forge
+      requires: ["gate"]
+    - id: monitor
+      capability: ops.monitor
+      agent: watchtower
+      requires: ["deploy"]
+  outputs:
+    deployed: "${steps.deploy.result}"
+  onError:
+    notify: ["echo", "watchtower"]

@@ -1,0 +1,41 @@
+apiVersion: sams/v1
+kind: Platform
+metadata:
+  name: my-sams-instance
+spec:
+  version: 0.9.0
+  defaultSpace: main.space
+  # `mock` runs the whole platform with zero API keys; switch to `anthropic`
+  # (and set ANTHROPIC_API_KEY) for live models.
+  defaultProvider: mock
+  spaces:
+    - id: main.space
+      file: assets/office-layout.spatial
+    - id: labs.space
+      file: assets/labs-layout.spatial
+  eventBus:
+    backend: in-memory          # in-memory | redis-streams | nats
+    retention: 7d
+  vault:
+    local_path: .sams/vault
+    # Production stores (unset -> local filesystem is used):
+    # relational: postgres://...
+    # documents: mongodb://...
+    # vectors: qdrant://...
+    # objects: s3://sams-artifacts
+  limits:
+    maxConcurrentAgents: 24
+    maxContextWindow: 200000
+  providers:
+    anthropic:
+      api_key: ${ANTHROPIC_API_KEY}
+      default_model: claude-sonnet-4
+    openai:
+      api_key: ${OPENAI_API_KEY}
+    local:
+      base_url: http://localhost:11434/v1
+  mcp:
+    servers:
+      - name: filesystem
+        type: stdio
+        command: "mcp-server-filesystem /work"

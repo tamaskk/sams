@@ -1,0 +1,236 @@
+{
+  "space_id": "labs.space",
+  "room": {
+    "width": 8.0,
+    "depth": 7.0,
+    "height": 3.0,
+    "grid": 0.5
+  },
+  "primitives": [
+    {
+      "id": "prim_40a01e8e",
+      "type": "Desk",
+      "name": "Lab Bench 01",
+      "transform": {
+        "position": [
+          2,
+          0,
+          2
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_a0066800",
+      "type": "Desk",
+      "name": "Lab Bench 02",
+      "transform": {
+        "position": [
+          2,
+          0,
+          4
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "wood",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#C8A876"
+      },
+      "tags": [
+        "desk"
+      ],
+      "bindings": [],
+      "interactions": [
+        "bind_directory",
+        "assign_agent",
+        "open_files"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_fbb726c0",
+      "type": "Vault",
+      "name": "Model Vault",
+      "transform": {
+        "position": [
+          6,
+          0,
+          5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "metal",
+        "opacity": 1.0,
+        "edgeGlow": true,
+        "color": "#94A3B8"
+      },
+      "tags": [
+        "vault"
+      ],
+      "bindings": [],
+      "interactions": [
+        "view_status",
+        "browse_files",
+        "inspect_memory"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_41591937",
+      "type": "Whiteboard",
+      "name": "Experiments",
+      "transform": {
+        "position": [
+          5,
+          2,
+          1
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "glass",
+        "opacity": 0.65,
+        "edgeGlow": true,
+        "color": "#7CC3FF"
+      },
+      "tags": [
+        "whiteboard"
+      ],
+      "bindings": [],
+      "interactions": [
+        "generate_diagram",
+        "expand_notes",
+        "convert_to_prd"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_99b3cf69",
+      "type": "Terminal",
+      "name": "Terminal",
+      "transform": {
+        "position": [
+          4,
+          0,
+          3
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "glass",
+        "opacity": 0.85,
+        "edgeGlow": true,
+        "color": "#0F172A"
+      },
+      "tags": [
+        "terminal"
+      ],
+      "bindings": [],
+      "interactions": [
+        "run_command",
+        "view_logs"
+      ],
+      "active": false
+    },
+    {
+      "id": "prim_0613b7aa",
+      "type": "Lounge",
+      "name": "Lounge",
+      "transform": {
+        "position": [
+          1.5,
+          0,
+          6
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "appearance": {
+        "material": "fabric",
+        "opacity": 1.0,
+        "edgeGlow": false,
+        "color": "#EDE9FE"
+      },
+      "tags": [
+        "lounge"
+      ],
+      "bindings": [],
+      "interactions": [
+        "assign_idle_agents"
+      ],
+      "active": false
+    }
+  ]
+}

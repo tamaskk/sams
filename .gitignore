@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# SAMS runtime state (the local Vault)
+.sams/
+
+# Secrets
+.env
+
+# Node / frontend
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+
+# OS / editor
+.DS_Store
+*.log
+.gstack/
+.claude/
+.env.*
+!.env.example
